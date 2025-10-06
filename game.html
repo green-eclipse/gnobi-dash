@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>GNOBI Dash - True GNOBI Hunt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Orbitron', monospace;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #gameArea {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(180deg, 
+                #0a0e27 0%, 
+                #151b3d 20%, 
+                #1e2659 50%, 
+                #0f1433 100%);
+            overflow: hidden;
+        }
+
+        /* Animated stars background */
+        #gameArea::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, white, transparent),
+                radial-gradient(2px 2px at 60% 70%, white, transparent),
+                radial-gradient(1px 1px at 50% 50%, white, transparent),
+                radial-gradient(1px 1px at 80% 10%, white, transparent),
+                radial-gradient(2px 2px at 90% 60%, cyan, transparent);
+            background-size: 200px 200px;
+            animation: stars 120s linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes stars {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* GNOBI Character */
+        #gnobi {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 100px;
+            transition: left 0.1s ease-out;
+            z-index: 10;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+        }
+
+        .gnobi-body {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 3px solid #000;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .gnobi-face {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 30px;
+        }
+
+        .gnobi-eyes {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            top: 0;
+        }
+
+        .eye {
+            width: 6px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .gnobi-mouth {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 15px;
+            border: 3px solid #000;
+            border-top: none;
+            border-radius: 0 0 25px 25px;
+        }
+
+        .gnobi-hat {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 45px solid #ff6b6b;
+            filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.6));
+            background: linear-gradient(180deg, 
+                #ff6b6b 0%, 
+                #ffa500 20%, 
+                #ffff00 40%, 
+                #00ff00 60%, 
+                #00ffff 80%, 
+                #ff00ff 100%);
+            -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .rainbow-hat {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 45px;
+            background: conic-gradient(from 0deg at 50% 100%, 
+                #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
+            -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) brightness(1); }
+            50% { filter: drop-shadow(0 0 25px rgba(255, 255, 255, 1)) brightness(1.2); }
+        }
+
+        .gnobi-wand {
+            position: absolute;
+            right: -20px;
+            top: 20px;
+            width: 3px;
+            height: 30px;
+            background: linear-gradient(180deg, #ffd700 0%, #ffed4e 100%);
+            transform: rotate(-20deg);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        .wand-star {
+            position: absolute;
+            top: -8px;
+            left: -7px;
+            font-size: 18px;
+            color: #ffd700;
+            filter: drop-shadow(0 0 8px #ffd700);
+            animation: sparkle 1s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+        }
+
+        /* Tokens */
+        .token {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .token.gnobi {
+            background: radial-gradient(circle, #ffd700, #ffed4e, #fff59d);
+            border: 3px solid #ffa000;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.9),
+                       0 0 50px rgba(255, 215, 0, 0.6),
+                       inset 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: glow 1s ease-in-out infinite;
+        }
+
+        .token.gnobi::after {
+            content: 'G';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 900;
+            color: #ff6b00;
+            text-shadow: 0 0 5px rgba(255, 107, 0, 0.5);
+        }
+
+        @keyframes glow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .token.meme {
+            background: linear-gradient(135deg, #ff69b4, #ffb6c1, #ffc0cb);
+            border: 3px solid #ff1493;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+            animation: wobble 2s ease-in-out infinite;
+        }
+
+        .token.meme::after {
+            content: '😂';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .token.cursed {
+            background: radial-gradient(circle, #8b0000, #dc143c, #ff0000);
+            border: 3px solid #000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.9),
+                       0 0 50px rgba(139, 0, 0, 0.6);
+            animation: glitch 0.3s ease-in-out infinite;
+        }
+
+        .token.cursed::after {
+            content: '💀';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            filter: invert(1);
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        /* HUD */
+        #walletHUD {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.1), 
+                rgba(255, 0, 255, 0.1));
+            border: 2px solid cyan;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5),
+                       inset 0 0 20px rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            min-width: 300px;
+            backdrop-filter: blur(10px);
+            animation: hudGlow 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        @keyframes hudGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.7), inset 0 0 25px rgba(255, 255, 255, 0.2); }
+        }
+
+        #walletScore {
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 0 20px cyan;
+            margin-bottom: 10px;
+        }
+
+        #playerNameHUD {
+            font-size: 16px;
+            color: #fff;
+            text-shadow: 0 0 6px rgba(0,255,255,0.3);
+            white-space: nowrap;
+        }
+
+        #timer {
+            font-size: 20px;
+            color: #0ff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #walletCounts {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .count-badge {
+            padding: 5px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+
+        /* Screens */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .screen h1 {
+            font-size: 48px;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #0ff, #f0f, #ff0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .screen p {
+            color: #fff;
+            font-size: 16px;
+            margin: 10px 0;
+            max-width: 80%;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            margin: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Effects */
+        .screen-shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .score-popup {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 50;
+            animation: scoreFloat 1s ease-out forwards;
+        }
+
+        @keyframes scoreFloat {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-60px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .score-popup.positive {
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+        }
+
+        .score-popup.negative {
+            color: #f00;
+            text-shadow: 0 0 10px #f00;
+        }
+
+        .power-surge-effect {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        .power-surge-effect::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 215, 0, 0.8), 
+                rgba(255, 215, 0, 0) 70%);
+            animation: powerSurge 0.8s ease-out forwards;
+        }
+
+        @keyframes powerSurge {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 150vw;
+                height: 150vw;
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Mobile controls */
+        .mobile-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: none;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 50;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: flex;
+            }
+        }
+
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFade 1s ease-out forwards;
+        }
+
+        @keyframes particleFade {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Scanline effect for HUD */
+        #walletHUD::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 255, 255, 0.5), 
+                transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        /* Instructions */
+        .instructions {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+        }
+
+        .controls-hint {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-icon {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        #usernameScreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  z-index: 9999;
+}
+
+#usernameScreen input {
+  padding: 12px 20px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  width: 250px;
+  text-align: center;
+}
+
+#usernameScreen.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #gnobi {
+    width: 60px;
+    height: 80px;
+  }
+  .token {
+    width: 40px;
+    height: 40px;
+  }
+  #walletHUD {
+    min-width: 240px;
+    padding: 10px 20px;
+  }
+  .btn {
+    font-size: 16px;
+    padding: 12px 25px;
+  }
+  h1 {
+    font-size: 32px !important;
+  }
+}
+
+#effectOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.effect {
+  font-size: 120px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  animation: fadePop 2s ease forwards;
+}
+
+.effect img {
+  width: 150px;
+  height: auto;
+  animation: floaty 2s ease-in-out infinite alternate;
+}
+
+@keyframes fadePop {
+  0% { opacity: 0; transform: scale(0.8); }
+  20% { opacity: 1; transform: scale(1.1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+@keyframes floaty {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20px); }
+}
+
+#reactionOverlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 9999;
+}
+
+.reaction-show {
+  opacity: 1;
+  animation: popIn 0.3s ease forwards;
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+#reactionOverlay {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+#reactionOverlay.reaction-show {
+  opacity: 1;
+  animation: pop 0.6s ease forwards;
+}
+
+@keyframes pop {
+  0% { transform: translate(-50%, -50%) scale(0.6); }
+  60% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="reactionOverlay"></div>
+
+        <!-- GNOBI Character -->
+        <div id="gnobi" class="hidden">
+            <div class="rainbow-hat"></div>
+            <div class="gnobi-body">
+                <div class="gnobi-face">
+                    <div class="gnobi-eyes">
+                        <div class="eye"></div>
+                        <div class="eye"></div>
+                    </div>
+                    <div class="gnobi-mouth"></div>
+                </div>
+                <div class="gnobi-wand">
+                    <div class="wand-star">⭐</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HUD -->
+        <div id="walletHUD" class="hidden">
+            <div>
+                <div id="walletScore">SOL Power: 0</div>
+                <div id="timer">⏱️ 30s</div>
+            </div>
+            <div id="playerNameHUD">Player: @guest</div>
+            <div id="walletCounts">
+                <div class="count-badge">🪙 GNOBI: <span id="gnobiCount">0</span></div>
+                <div class="count-badge">😂 Meme: <span id="memeCount">0</span></div>
+                <div class="count-badge">💀 Cursed: <span id="cursedCount">0</span></div>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+            <div class="control-btn" id="leftBtn">◀</div>
+            <div class="control-btn" id="rightBtn">▶</div>
+        </div>
+    </div>
+
+    <!-- Username Entry Screen -->
+<div id="usernameScreen" class="screen">
+  <h1>Enter your $gnobi username</h1>
+  <input id="usernameInput" type="text" placeholder="Type your username..." />
+  <button id="usernameBtn" class="btn">Continue</button>
+</div>
+
+    <div id="startScreen" class="screen">
+        <h1>GNOBI DASH</h1>
+        <p style="font-size: 24px; color: #0ff;">True GNOBI Hunt 🌙✨</p>
+        <div class="instructions">
+            <p><strong>How to Play:</strong></p>
+            <p>🎯 Slide to move GNOBI</p>
+            <p>🪙 Catch the real GNOBI coins (+10 points)</p>
+            <p>😂 Avoid meme coins (-5 points)</p>
+            <p>💀 Dodge cursed tokens (-15 points)</p>
+            <p>⚡ Every 10 GNOBI coins = POWER SURGE (+20 bonus)</p>
+            <p>⏱️ 30 second rounds</p>
+            <div class="controls-hint">
+                <div class="control-item">
+                    <div class="control-icon">🖱️</div>
+                    <span>Mouse/Touch</span>
+                </div>
+                <div class="control-item">
+                    <div class="control-icon">⌨️</div>
+                    <span>Arrow Keys</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn" id="startBtn">🪄 Cast Spell (Start)</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen hidden">
+        <h1>MOONBAG COMPLETE!</h1>
+        <p style="font-size: 24px; color: #ffd700;">You earned <span id="finalScore">0</span> SOL Power 🌕✨</p>
+        <div id="gameStats" style="margin: 20px 0; color: #fff;">
+            <p>Player: <span id="finalPlayer">@guest</span></p>
+            <p>🪙 GNOBI Coins: <span id="finalGnobi">0</span></p>
+            <p>😂 Meme Coins: <span id="finalMeme">0</span></p>
+            <p>💀 Cursed Tokens: <span id="finalCursed">0</span></p>
+            <p>⚡ Power Surges: <span id="finalSurges">0</span></p>
+            <p>🎯 Accuracy: <span id="finalAccuracy">0</span>%</p>
+        </div>
+        <div>
+            <button class="btn" id="restartBtn">🔄 Play Again</button>
+            <button class="btn" id="shareBtn" style="background: linear-gradient(135deg, #1DA1F2, #0A66C2);">📱 Share Score</button>
+        </div>
+    </div>
+
+    <!-- effect overlay used by showEffect() -->
+    <div id="effectOverlay"></div>
+
+    <script>
+        // Game Configuration
+        const config = {
+            duration: 30000, // 30 seconds
+            spawnWeights: { gnobi: 60, meme: 30, cursed: 10 },
+            spawnIntervalBase: 700,
+            spawnIntervalMin: 300,
+            fallSpeedBase: 3,
+            fallSpeedMaxFactor: 1.8,
+            values: { gnobi: 10, meme: -5, cursed: -15 },
+            powerSurgeEvery: 10,
+            powerSurgeBonus: 20,
+            gnobiWidth: 80,
+            tokenWidth: 50
+        };
+
+        // Game State
+        let gameState = 'READY';
+        let score = 0;
+        let gnobiCount = 0;
+        let memeCount = 0;
+        let cursedCount = 0;
+        let powerSurges = 0;
+        let timeRemaining = config.duration;
+
+        let lastTimestamp = 0;
+        let gnobiPosition = 50; // percentage
+        let animationId = null;
+        let timerInterval = null;
+
+        // DOM Elements
+        const gameArea = document.getElementById('gameArea');
+        const gnobi = document.getElementById('gnobi');
+        const walletHUD = document.getElementById('walletHUD');
+        const walletScore = document.getElementById('walletScore');
+        const timer = document.getElementById('timer');
+        const gnobiCountEl = document.getElementById('gnobiCount');
+        const memeCountEl = document.getElementById('memeCount');
+        const cursedCountEl = document.getElementById('cursedCount');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+
+        // Username entry elements
+        const usernameScreen = document.getElementById("usernameScreen");
+        const usernameInput = document.getElementById("usernameInput");
+        const usernameBtn = document.getElementById("usernameBtn");
+        const playerNameHUD = document.getElementById("playerNameHUD");
+        let playerUsername = "";
+
+        // GameOver player display
+        const finalPlayerEl = document.getElementById('finalPlayer');
+
+        // Input Handling
+        let isDragging = false;
+        let keys = { left: false, right: false };
+
+        // Tokens & spawn control
+        let tokens = [];
+        let nextSpawnIn = 1000;
+        let elapsed = 0;
+        let isStunned = false;
+
+        // Initialize
+        function init() {
+            setupEventListeners();
+            updateGnobiPosition();
+            // show username screen first
+            usernameScreen.classList.remove('hidden');
+            startScreen.classList.add('hidden');
+            walletHUD.classList.add('hidden');
+            gnobi.classList.add('hidden');
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Username
+            usernameBtn.addEventListener("click", () => {
+                const name = usernameInput.value.trim();
+                if (!name) {
+                    alert("Please enter your $gnobi username first!");
+                    return;
+                }
+                // ensure display format: @username
+                playerUsername = name.startsWith('@') ? name : ('@' + name);
+                usernameScreen.classList.add("hidden");
+                startScreen.classList.remove("hidden");
+                // update HUD display placeholder (will show when HUD visible)
+                playerNameHUD.textContent = `Player: ${playerUsername}`;
+            });
+
+            // Start/Restart
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', () => {
+                cleanupGame(); // stop loops, timers, tokens
+                gameOverScreen.classList.add('hidden');
+                // Keep username and show start screen then start immediately for a smoother flow:
+                startGame();
+            });
+
+            shareBtn.addEventListener('click', shareScore);
+
+            // Desktop - Mouse
+            gameArea.addEventListener('mousedown', handleMouseDown);
+            gameArea.addEventListener('mousemove', handleMouseMove);
+            gameArea.addEventListener('mouseup', handleMouseUp);
+            gameArea.addEventListener('mouseleave', handleMouseUp);
+
+            // Desktop - Keyboard
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+
+            // Mobile - Touch
+            gameArea.addEventListener('touchstart', handleTouchStart, { passive: false });
+            gameArea.addEventListener('touchmove', handleTouchMove, { passive: false });
+            gameArea.addEventListener('touchend', handleTouchEnd);
+
+            // Mobile - Control Buttons
+            leftBtn.addEventListener('click', () => moveGnobi(-10));
+            rightBtn.addEventListener('click', () => moveGnobi(10));
+        }
+
+        // Mouse Controls
+        function handleMouseDown(e) {
+            if (gameState !== 'PLAYING') return;
+            isDragging = true;
+            updateGnobiFromMouse(e.clientX);
+        }
+
+        function handleMouseMove(e) {
+            if (gameState !== 'PLAYING' || !isDragging) return;
+            updateGnobiFromMouse(e.clientX);
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+        }
+
+        function updateGnobiFromMouse(x) {
+            const rect = gameArea.getBoundingClientRect();
+            const percentage = ((x - rect.left) / rect.width) * 100;
+            gnobiPosition = Math.max(5, Math.min(95, percentage));
+            updateGnobiPosition();
+        }
+
+        // Keyboard Controls
+        function handleKeyDown(e) {
+            if (gameState !== 'PLAYING') return;
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+        }
+
+        function handleKeyUp(e) {
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+        }
+
+        // Touch Controls
+        function handleTouchStart(e) {
+            if (gameState !== 'PLAYING') return;
+            e.preventDefault();
+            isDragging = true;
+            updateGnobiFromTouch(e.touches[0].clientX);
+        }
+
+        function handleTouchMove(e) {
+            if (gameState !== 'PLAYING' || !isDragging) return;
+            e.preventDefault();
+            updateGnobiFromTouch(e.touches[0].clientX);
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            isDragging = false;
+        }
+
+        function updateGnobiFromTouch(x) {
+            updateGnobiFromMouse(x);
+        }
+
+        // Movement
+        function moveGnobi(delta) {
+            if (isStunned) return;
+            gnobiPosition = Math.max(5, Math.min(95, gnobiPosition + delta));
+            updateGnobiPosition();
+        }
+
+        function updateGnobiPosition() {
+            gnobi.style.left = gnobiPosition + '%';
+        }
+
+        // Game Management
+        function cleanupGame() {
+            cancelAnimationFrame(animationId);
+            clearInterval(timerInterval);
+            document.querySelectorAll(".token").forEach(t => t.remove());
+            animationId = null;
+            timerInterval = null;
+            tokens = [];
+        }
+
+        function startGame() {
+            resetState();
+            gameState = 'PLAYING';
+            startScreen.classList.add('hidden');
+            gnobi.classList.remove('hidden');
+            walletHUD.classList.remove('hidden');
+
+            // set HUD player name (if not set, fallback to @guest)
+            if (!playerUsername) playerUsername = '@guest';
+            playerNameHUD.textContent = `Player: ${playerUsername}`;
+
+            lastTimestamp = performance.now();
+            startTimer();
+            // use requestAnimationFrame gameLoop
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function resetState() {
+            score = 0;
+            gnobiCount = 0;
+            memeCount = 0;
+            cursedCount = 0;
+            powerSurges = 0;
+            elapsed = 0;
+            timeRemaining = config.duration;
+            tokens = [];
+            nextSpawnIn = 0;
+            isStunned = false;
+            gnobiPosition = 50;
+            // Clear any existing tokens
+            document.querySelectorAll('.token').forEach(token => token.remove());
+            updateHUD();
+            updateGnobiPosition();
+        }
+
+        function startTimer() {
+            const startTime = Date.now();
+            timerInterval = setInterval(() => {
+                timeRemaining = Math.max(0, config.duration - (Date.now() - startTime));
+                const seconds = Math.ceil(timeRemaining / 1000);
+                timer.textContent = `⏱️ ${seconds}s`;
+
+                if (timeRemaining <= 0) {
+                    endGame();
+                }
+            }, 100);
+        }
+
+        function endGame() {
+            gameState = 'GAME_OVER';
+            clearInterval(timerInterval);
+            if (animationId) cancelAnimationFrame(animationId);
+
+            // Calculate stats
+            const totalCatches = gnobiCount + memeCount + cursedCount;
+            const accuracy = totalCatches > 0 ? Math.round((gnobiCount / totalCatches) * 100) : 0;
+
+            // Update game over screen
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalGnobi').textContent = gnobiCount;
+            document.getElementById('finalMeme').textContent = memeCount;
+            document.getElementById('finalCursed').textContent = cursedCount;
+            document.getElementById('finalSurges').textContent = powerSurges;
+            document.getElementById('finalAccuracy').textContent = accuracy;
+            finalPlayerEl.textContent = playerUsername || '@guest';
+
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // Game Loop (timestamp-based)
+        function gameLoop(timestamp) {
+            if (gameState !== 'PLAYING') return;
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const dt = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            update(dt);
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function update(dt) {
+            elapsed += dt;
+
+            // Movement (keyboard)
+            if (!isStunned) {
+                if (keys.left) moveGnobi(-0.5 * dt);
+                if (keys.right) moveGnobi(0.5 * dt);
+            }
+
+            // Spawning logic
+            nextSpawnIn -= dt;
+            if (nextSpawnIn <= 0) {
+                spawnToken();
+                const spawnProgress = Math.min(1, elapsed / config.duration);
+                const spawnInterval = config.spawnIntervalBase - 
+                    (config.spawnIntervalBase - config.spawnIntervalMin) * spawnProgress;
+                nextSpawnIn = spawnInterval;
+            }
+
+            // Update tokens
+            // we use a for loop to allow removal
+            for (let i = tokens.length - 1; i >= 0; i--) {
+                const t = tokens[i];
+                // move with frame-time scaling (using dt)
+                t.y += t.speed * (dt / 16);
+                t.el.style.top = t.y + 'px';
+
+                // collision
+                if (checkCollision(t)) {
+                    handleTokenCatch(t);
+                    // remove element and from array
+                    if (t.el && t.el.remove) t.el.remove();
+                    tokens.splice(i, 1);
+                    continue;
+                }
+
+                // off-screen
+                if (t.y > gameArea.offsetHeight + 100) {
+                    if (t.el && t.el.remove) t.el.remove();
+                    tokens.splice(i, 1);
+                }
+            }
+        }
+
+        // Token Management
+        function spawnToken() {
+            const type = getWeightedRandomType();
+            const tokenEl = document.createElement('div');
+            tokenEl.className = `token ${type}`;
+
+            const x = Math.random() * (gameArea.offsetWidth - config.tokenWidth);
+            const y = -60;
+            tokenEl.style.left = x + 'px';
+            tokenEl.style.top = y + 'px';
+
+            gameArea.appendChild(tokenEl);
+
+            tokens.push({
+                el: tokenEl,
+                type,
+                x,
+                y,
+                speed: calculateFallSpeed()
+            });
+        }
+
+        function getWeightedRandomType() {
+            const weights = config.spawnWeights;
+            const total = weights.gnobi + weights.meme + weights.cursed;
+            const random = Math.random() * total;
+
+            if (random < weights.gnobi) return 'gnobi';
+            if (random < weights.gnobi + weights.meme) return 'meme';
+            return 'cursed';
+        }
+
+        function calculateFallSpeed() {
+            const progress = Math.min(1, elapsed / config.duration);
+            const speedMultiplier = 1 + (config.fallSpeedMaxFactor - 1) * progress;
+            return config.fallSpeedBase * speedMultiplier;
+        }
+
+        function checkCollision(token) {
+            const gnobiRect = gnobi.getBoundingClientRect();
+            const tokenRect = token.el.getBoundingClientRect();
+
+            return !(tokenRect.right < gnobiRect.left || 
+                    tokenRect.left > gnobiRect.right || 
+                    tokenRect.bottom < gnobiRect.top || 
+                    tokenRect.top > gnobiRect.bottom);
+        }
+
+        // Visual effects used on catch
+        function showEffect(type) {
+            const overlay = document.getElementById("effectOverlay");
+            if (!overlay) return;
+            overlay.innerHTML = ""; // clear previous
+            const el = document.createElement("div");
+            el.classList.add("effect");
+
+            if (type === "meme") {
+                el.textContent = "😂";
+            } else if (type === "cursed") {
+                el.textContent = "💀";
+            } else if (type === "gnobi") {
+                const img = document.createElement("img");
+                img.src = "assets/gnobi.png"; // if this asset exists it'll show, otherwise blank
+                img.alt = "gnobi";
+                el.appendChild(img);
+            }
+
+            overlay.appendChild(el);
+            setTimeout(() => {
+                if (overlay) overlay.innerHTML = "";
+            }, 2000); // remove after 2s
+        }
+
+        // Score popup (uses token position)
+        function createScorePopup(value, token) {
+            const popup = document.createElement('div');
+            popup.className = `score-popup ${value > 0 ? 'positive' : 'negative'}`;
+            popup.textContent = value > 0 ? `+${value}` : `${value}`;
+            // Position roughly where the token was
+            try {
+                const rect = token.el.getBoundingClientRect();
+                popup.style.left = rect.left + rect.width / 2 + 'px';
+                popup.style.top = rect.top + 'px';
+            } catch (e) {
+                popup.style.left = '50%';
+                popup.style.top = '50%';
+            }
+            gameArea.appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        // Particles
+        function createParticles(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+
+                const angle = (Math.PI * 2 * i) / 8;
+                const distance = 50 + Math.random() * 50;
+                particle.style.setProperty('--dx', Math.cos(angle) * distance + 'px');
+                particle.style.setProperty('--dy', Math.sin(angle) * distance + 'px');
+
+                gameArea.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // Centralised catch handler (ensures reactions trigger)
+        function handleTokenCatch(token) {
+            const value = config.values[token.type] || 0;
+            if (token.type === "gnobi") gnobiCount++;
+            if (token.type === "meme") memeCount++;
+            if (token.type === "cursed") cursedCount++;
+
+            score += value;
+            createScorePopup(value, token);
+            updateHUD();
+
+            // Visual + reaction triggers
+            showEffect(token.type);
+            triggerReaction(token.type);
+            createParticles(token.el);
+
+            if (token.type === "cursed") {
+                triggerScreenShake();
+                stunPlayer(800);
+            }
+
+            if (token.type === "gnobi" && (gnobiCount % config.powerSurgeEvery === 0)) {
+                triggerPowerSurge();
+            }
+        }
+
+        function updateHUD() {
+            walletScore.textContent = `SOL Power: ${score}`;
+            gnobiCountEl.textContent = gnobiCount;
+            memeCountEl.textContent = memeCount;
+            cursedCountEl.textContent = cursedCount;
+            // playerNameHUD stays showing current username
+            if (!playerUsername) playerNameHUD.textContent = `Player: @guest`;
+        }
+
+        function triggerScreenShake() {
+            gameArea.classList.add("screen-shake");
+            setTimeout(() => gameArea.classList.remove("screen-shake"), 500);
+        }
+
+        function stunPlayer(ms) {
+            isStunned = true;
+            gnobi.style.opacity = 0.5;
+            setTimeout(() => {
+                isStunned = false;
+                gnobi.style.opacity = 1;
+            }, ms);
+        }
+
+        function triggerPowerSurge() {
+            powerSurges++;
+            score += config.powerSurgeBonus;
+            updateHUD();
+            const surge = document.createElement("div");
+            surge.classList.add("power-surge-effect");
+            document.body.appendChild(surge);
+            setTimeout(() => surge.remove(), 800);
+        }
+
+        // Reaction overlay (central)
+        function triggerReaction(type) {
+            const overlay = document.getElementById("reactionOverlay");
+            if (!overlay) return;
+            overlay.className = ""; // reset
+            overlay.innerHTML = "";
+
+            if (type === "gnobi") {
+                // prefer image if present
+                overlay.innerHTML = `<img src="assets/gnobi_catch.png" style="width:150px; height:auto;">`;
+            } else if (type === "meme") {
+                overlay.textContent = "😂";
+            } else if (type === "cursed") {
+                overlay.textContent = "💀";
+                gameArea.classList.add("screen-shake");
+                setTimeout(() => gameArea.classList.remove("screen-shake"), 800);
+            }
+
+            overlay.classList.add("reaction-show");
+
+            // cleanup
+            setTimeout(() => {
+                overlay.classList.remove("reaction-show");
+                overlay.innerHTML = "";
+            }, 2000);
+        }
+
+        function shareScore() {
+            const text = `🌕 I scored ${score} SOL Power in GNOBI Dash! ⚡ Can you beat me? #GNOBIDash`;
+            const url = encodeURIComponent(window.location.href);
+            const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                text
+            )}&url=${url}`;
+            window.open(shareUrl, "_blank");
+        }
+
+        // Start the game system
+        init();
+    </script>
+</body>
+</html>
